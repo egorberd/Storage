@@ -7,7 +7,7 @@ using Storage.Database;
 public abstract class Warehouse
 {
     // Инициализируем переменные общего набора свойств (ID, ширина, высота, глубина, вес)
-    public Guid id { get; } = Guid.NewGuid();
+    // public Guid id { get; } = Guid.NewGuid();
     public int DbId { get; set; }
     public double width { get; set; }
     public double height { get; set; }
@@ -26,7 +26,7 @@ public abstract class Warehouse
     // Переопределяем метод ToString() для последующего вывода параметров на экран
     public override string ToString()
     {
-        return $"App_ID: {id}, DB_ID: {DbId} Ширина: {width}, Высота: {height}, Глубина: {depth}, Вес: {weight}";
+        return $"ID: {DbId}, Ширина: {width}, Высота: {height}, Глубина: {depth}, Вес: {weight}";
     }
 }
 
@@ -37,7 +37,7 @@ public class Box : Warehouse
     public DateOnly expirationDate { get; private set; }
     public DateOnly? productionDate { get; private set; }
 
-    // нициализируем конструктор наследуемого класса 
+    // Инициализируем конструктор наследуемого класса 
     public Box(double Width, double Height, double Depth, double Weight,
         DateOnly ExpirationDate, DateOnly? ProductionDate = null) : base(Width, Height, Depth, Weight)
     {
@@ -45,7 +45,7 @@ public class Box : Warehouse
         productionDate = ProductionDate;
 
         //Прописываем условие: "Если указана дата производства, то срок годности вычисляется из даты производства плюс 100 дней"
-        expirationDate = productionDate.HasValue ? productionDate.Value.AddDays(100) : expirationDate;
+        expirationDate = productionDate is not null && expirationDate < productionDate ? productionDate.Value.AddDays(100) : expirationDate;
     }
 
     // Создаем функцию для рассчёта объема коробки
@@ -57,13 +57,13 @@ public class Box : Warehouse
     // Переопределяем метод ToString() для последующего вывода параметров на экран
     public override string ToString()
     {
-        string dateInfo = productionDate.HasValue ? $", Дата производства: {productionDate.Value:dd.MM.yyyy}, Срок годности: {expirationDate:dd.MM.yyyy}" : $"Срок годности: {expirationDate:dd.MM.yyyy}";
+        string dateInfo = productionDate.HasValue ? $", Дата производства: {productionDate.Value:dd.MM.yyyy}, Срок годности: {expirationDate:dd.MM.yyyy}" : $", Срок годности: {expirationDate:dd.MM.yyyy}";
 
         return base.ToString() + dateInfo;
     }
 }
 
-// оздаем наследуемый класс "Паллета"
+// Создаем наследуемый класс "Паллета"
 public class Pallet : Warehouse
 {
     // Инициализируем список объектов класса "Коробка" т.к. паллета может содержать в себе коробки
@@ -76,7 +76,7 @@ public class Pallet : Warehouse
     }
 
     // Вычисляем срок годности паллеты
-    public DateOnly ExpirationDate
+    public DateOnly? ExpirationDate
     {
         get
         {
@@ -109,12 +109,6 @@ public class Pallet : Warehouse
         CalculateWeight();
     }
 
-    // Создаем метод для удаления коробки
-    /*   public void RemoveBox(Box box)
-       {
-           if (boxes.Remove(box)) CalculateWeight();
-       }*/
-
     // Создаем функцию для рассчета веса паллеты 
     public void CalculateWeight()
     {
@@ -139,6 +133,66 @@ public class Program
 {
     public static void Main()
     {
-        Module_DB.DataBaseInteraction();
+        Module_DB.OpeningDataBase();
+        // Инициализируем два списка объектов класса Box и Pallet
+        List<Box> boxes = Module_DB.LoadBoxesFromDatabase(); // Вызываем метод для выгрузки данных коробок из БД
+        List<Pallet> pallets = Module_DB.LoadPalletsFromDatabase(); // Вызываем метод для выгрузки данных паллет из БД
+
+        // Проверка на наличие данных в списках паллет и коробок
+        if (pallets.Any() && boxes.Any())
+        {
+            foreach (var box in boxes)
+            {
+                pallets[0].AddBox(box); // Добавляем все коробки к первой паллете
+            }
+        }
+
+        // Выводим информацию по коробкам в консоль
+        Console.WriteLine("Коробки: ");
+        foreach (var box in boxes)
+        {
+            Console.WriteLine(box);
+        }
+
+        // Выводим информацию по паллетам в консоль
+        Console.WriteLine("\nПаллеты: ");
+        foreach (var pallet in pallets)
+        {
+            Console.WriteLine(pallet);
+
+            // Выводим коробки стоящие на определенной паллете:
+            if (pallet.boxes.Any())
+            {
+                Console.WriteLine("  Коробки на этой паллете: ");
+                foreach (var boxOnPallet in pallet.boxes)
+                {
+                    Console.WriteLine($"    - {boxOnPallet}");
+                }
+            }
+        }
+        // Группировка всех паллет по сроку годности
+        Console.WriteLine("\n Группировка всех паллет по сроку годности: ");
+        var groupSortPallets = pallets.GroupBy(p => p.ExpirationDate);
+
+        /* var groupedAndSortedPallets = pallets
+             .GroupBy(p => p.ExpirationDate)
+             .OrderBy(g => g.Key)
+             .Select(g => new
+             {
+                 ExpiryDate = g.Key,
+                 Pallets = g.OrderBy(p => p.weight).ToList()
+             });*/
+
+        foreach (var group in groupSortPallets)
+        {
+            Console.WriteLine(group.Key + ":");
+
+            /*Console.WriteLine($"\nСрок годности: {(group.ExpiryDate == DateOnly.MaxValue ? "Без коробки или скоропортящиеся" : group.ExpiryDate.ToString("dd.MM.yyyy"))}");
+            foreach (var pallet in group.Pallets)
+            {
+                Console.WriteLine($"  - {pallet}");
+            }*/
+        }
+
     }
 }
