@@ -33,33 +33,35 @@ namespace Storage.Database
             List<Box> boxes = new List<Box>();
 
             // Устанавливаем соединение с БД SqLite
-            using (SqliteConnection connection = new SqliteConnection(connectionString))
+            using SqliteConnection connection = new SqliteConnection(connectionString);
             {
                 connection.Open();
 
                 // Пишем SQL запрос для получения всех данных таблицы Boxes
-                string query = "SELECT ID, Width, Height, Depth, Weight, ProductionDate, ExpirationDate FROM Boxes";
-                using (SqliteCommand command = new SqliteCommand(query, connection))
+                var query = "SELECT ID, Width, Height, Depth, Weight, ProductionDate, ExpirationDate FROM Boxes";
+                using SqliteCommand command = new SqliteCommand(query, connection);
                 {
-                    using (SqliteDataReader reader = command.ExecuteReader())
+                    using SqliteDataReader reader = command.ExecuteReader();
                     {
                         while (reader.Read())
                         {
+                            //Т.к. SqLite хранит дату в текстовом формате мы парсим её чтоб преобразовать в DateOnly
                             DateOnly? parseProductionDate = null;
                             if (reader["ProductionDate"] != DBNull.Value)
                             {
-                                string prodDateStr = reader["ProductionDate"].ToString();
+                                var prodDateStr = reader["ProductionDate"].ToString();
                                 if (DateTime.TryParse(prodDateStr, out var prodData))
                                 {
                                     parseProductionDate = DateOnly.FromDateTime(prodData);
                                 }
-                                else if (!string.IsNullOrEmpty(prodDateStr)) Console.WriteLine("Ошибочка!");
+                                else if (!string.IsNullOrEmpty(prodDateStr)) // Если строка не пустая, но не распарсилась
+                                    Console.WriteLine("Ошибка: Не удалось преобразовать в нужный формат!");
                             }
 
-                            DateOnly parseExpDate = DateOnly.MinValue;
+                            var parseExpDate = DateOnly.MinValue;
                             if (!string.IsNullOrEmpty(reader["ExpirationDate"].ToString()))
                             {
-                                string expDateStr = reader["ExpirationDate"].ToString();
+                                var expDateStr = reader["ExpirationDate"].ToString();
                                 if (DateTime.TryParse(expDateStr, out var expData))
                                 {
                                     parseExpDate = DateOnly.FromDateTime(expData);
@@ -69,12 +71,12 @@ namespace Storage.Database
 
                             // Создаем объект класса Box и присваиваем ему данные из БД
                             Box box = new Box(
-                                Width: Convert.ToDouble(reader["Width"]),
-                                Height: Convert.ToDouble(reader["Height"]),
-                                Depth: Convert.ToDouble(reader["Depth"]),
-                                Weight: Convert.ToDouble(reader["Weight"]),
-                                ProductionDate: parseProductionDate,
-                                ExpirationDate: parseExpDate
+                                width: Convert.ToDouble(reader["Width"]),
+                                height: Convert.ToDouble(reader["Height"]),
+                                depth: Convert.ToDouble(reader["Depth"]),
+                                weight: Convert.ToDouble(reader["Weight"]),
+                                productionDate: parseProductionDate,
+                                expirationDate: parseExpDate
 
                              );
 
@@ -96,8 +98,9 @@ namespace Storage.Database
             using (SqliteConnection connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
+
                 // Пишем SQL запрос для получения всех данных таблицы Pallets
-                string query = "SELECT ID, Width, Height, Depth FROM Pallets";
+                var query = "SELECT ID, Width, Height, Depth FROM Pallets";
                 using (SqliteCommand command = new SqliteCommand(query, connection))
                 {
                     using (SqliteDataReader reader = command.ExecuteReader())
@@ -106,9 +109,9 @@ namespace Storage.Database
                         {
                             // Создаем объект класса Pallet и присваиваем ему данные из БД
                             Pallet pallet = new Pallet(
-                                Width: Convert.ToDouble(reader["Width"]),
-                                Height: Convert.ToDouble(reader["Height"]),
-                                Depth: Convert.ToDouble(reader["Depth"])
+                                width: Convert.ToDouble(reader["Width"]),
+                                height: Convert.ToDouble(reader["Height"]),
+                                depth: Convert.ToDouble(reader["Depth"])
                             );
                             pallet.DbId = Convert.ToInt32(reader["ID"]); // Сохраняем ID из базы данных
                             pallets.Add(pallet);

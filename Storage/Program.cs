@@ -6,54 +6,53 @@ public abstract class Warehouse
     // Инициализируем переменные общего набора свойств (ID, ширина, высота, глубина, вес)
     // public Guid id { get; } = Guid.NewGuid();
     public int DbId { get; set; }
-    public double width { get; set; }
-    public double height { get; set; }
-    public double depth { get; set; }
-    public double weight { get; set; }
+    public double Width { get; set; }
+    public double Height { get; set; }
+    public double Depth { get; set; }
+    public double Weight { get; set; }
 
     // Инициализируем конструктор родительского класса 
-    protected Warehouse(double Width, double Height, double Depth, double Weight)
+    protected Warehouse(double width, double height, double depth, double weight)
     {
-        width = Width;
-        height = Height;
-        depth = Depth;
-        weight = Weight;
+        Width = width;
+        Height = height;
+        Depth = depth;
+        Weight = weight;
     }
 
     // Переопределяем метод ToString() для последующего вывода параметров на экран
     public override string ToString()
-    {
-        return $"ID: {DbId}, Ширина: {width}, Высота: {height}, Глубина: {depth}, Вес: {weight}";
-    }
+        => $"ID: {DbId}, Ширина: {Width}, Высота: {Height}, Глубина: {Depth}, Вес: {Weight}";
+
 }
 
 // Создаем наследуемый класс "Коробка"
 public class Box : Warehouse
 {
     // Инициализируем переменные срока годности и даты производства
-    public DateOnly expirationDate { get; private set; }
-    public DateOnly? productionDate { get; private set; }
+    public DateOnly ExpirationDate { get; private set; }
+    public DateOnly? ProductionDate { get; private set; }
 
     // Инициализируем конструктор наследуемого класса 
-    public Box(double Width, double Height, double Depth, double Weight,
-        DateOnly ExpirationDate, DateOnly? ProductionDate = null) : base(Width, Height, Depth, Weight)
+    public Box(double width, double height, double depth, double weight,
+        DateOnly expirationDate, DateOnly? productionDate = null) : base(width, height, depth, weight)
     {
-        productionDate = ProductionDate;
-        expirationDate = ExpirationDate;
+        ProductionDate = productionDate;
+        ExpirationDate = expirationDate;
     }
 
     // Создаем функцию для рассчёта объема коробки
     public double CalculateVolume()
     {
-        return width * height * depth;
+        return Width * Height * Depth;
     }
 
     // Переопределяем метод ToString() для последующего вывода параметров на экран
     public override string ToString()
     {
-        string dateInfo = productionDate.HasValue ? $", Дата производства: {productionDate.Value:dd.MM.yyyy}, Срок годности: {expirationDate:dd.MM.yyyy}" : $", Срок годности: {expirationDate:dd.MM.yyyy}";
+        var dateInfo = ProductionDate.HasValue ? $", Дата производства: {ProductionDate.Value:dd.MM.yyyy}, Срок годности: {ExpirationDate:dd.MM.yyyy}" : $", Срок годности: {ExpirationDate:dd.MM.yyyy}";
 
-        return base.ToString() + $", Объем коробки: {CalculateVolume()}" + dateInfo;
+        return $"{base.ToString()}, Объем коробки: {CalculateVolume()}{dateInfo}";
     }
 }
 
@@ -61,11 +60,11 @@ public class Box : Warehouse
 public class Pallet : Warehouse
 {
     // Инициализируем список объектов класса "Коробка" т.к. паллета может содержать в себе коробки
-    public List<Box> boxes = new List<Box>();
-    public const double palletWeight = 30.0;
+    public List<Box> Boxes = new List<Box>();
+    public const double PalletWeight = 30.0;
 
     // Инициализируем конструктор наследуемого класса меняя базовое значение веса на константу 30.0
-    public Pallet(double Width, double Height, double Depth) : base(Width, Height, Depth, palletWeight)
+    public Pallet(double width, double height, double depth) : base(width, height, depth, PalletWeight)
     {
     }
 
@@ -74,54 +73,52 @@ public class Pallet : Warehouse
     {
         get
         {
-            if (!boxes.Any())
+            if (!Boxes.Any())
             {
                 return DateOnly.MaxValue;
             }
-            return boxes.Min(box => box.expirationDate);
+            return Boxes.Min(box => box.ExpirationDate);
         }
     }
     // Создаем метод для добавления коробки с проверкой по размерам (по ширине и глубине)
     public void AddBox(Box box)
     {
-        if (box.width > width && box.depth > depth)
+        if (box.Width > Width && box.Depth > Depth)
         {
-            Console.WriteLine($"Предупреждение: Ширина и глубина коробки {box.DbId} ({box.width},{box.depth}) превышает ширину и глубину паллеты {DbId} ({width},{depth})\n");
+            Console.WriteLine($"Предупреждение: Ширина и глубина коробки {box.DbId} ({box.Width},{box.Depth}) превышает ширину и глубину паллеты {DbId} ({Width},{Depth})\n");
         }
-        else if (box.width > width)
+        else if (box.Width > Width)
         {
-            Console.WriteLine($"Предупреждение: Ширина коробки {box.DbId} ({box.width}) превышает ширину паллеты {DbId} ({width})\n");
+            Console.WriteLine($"Предупреждение: Ширина коробки {box.DbId} ({box.Width}) превышает ширину паллеты {DbId} ({Width})\n");
         }
-        else if (box.depth > depth)
+        else if (box.Depth > Depth)
         {
-            Console.WriteLine($"Предупреждение: Глубина коробки {box.DbId} ({box.depth}) превышает глубину паллеты {DbId} ({depth})\n");
+            Console.WriteLine($"Предупреждение: Глубина коробки {box.DbId} ({box.Depth}) превышает глубину паллеты {DbId} ({Depth})\n");
         }
         else
         {
-            boxes.Add(box);
-            CalculateWeight();
+            Boxes.Add(box);
         }
-
+        CalculateWeight();
     }
 
     // Создаем функцию для рассчета веса паллеты 
     public void CalculateWeight()
     {
-        weight = boxes.Sum(box => box.weight) + palletWeight;
+        Weight = Boxes.Sum(box => box.Weight) + PalletWeight;
     }
 
     // Создаем функцию для рассчета объема паллеты 
     public double CalculateVolume()
     {
-        double palletDepth = width * height * depth;
-        return boxes.Sum(box => box.CalculateVolume()) + palletDepth;
+        var palletDepth = Width * Height * Depth;
+        return Boxes.Sum(box => box.CalculateVolume()) + palletDepth;
     }
 
     // Переопределяем метод ToString() для последующего вывода параметров на экран
     public override string ToString()
-    {
-        return base.ToString() + $", Объем паллеты: {CalculateVolume()}, Срок годности: {ExpirationDate}, Кол-во коробок: {boxes.Count()}";
-    }
+        => base.ToString() + $", Объем паллеты: {CalculateVolume()}, Срок годности: {ExpirationDate}, Кол-во коробок: {Boxes.Count()}";
+
 }
 
 public class Program
@@ -160,28 +157,31 @@ public class Program
         {
             Console.WriteLine($"\n{pallet}");
 
-            // Выводим коробки стоящие на определенной паллете:
-            if (pallet.boxes.Any())
+            if (pallet.Boxes.Count == 0)
             {
-                Console.WriteLine("  Коробки на этой паллете: ");
-                foreach (var boxOnPallet in pallet.boxes)
-                {
-                    Console.WriteLine($"\t- {boxOnPallet}");
-                }
+                continue;
+            }
+
+            // Выводим коробки стоящие на определенной паллете:
+            Console.WriteLine("  Коробки на этой паллете: ");
+            foreach (var boxOnPallet in pallet.Boxes)
+            {
+                Console.WriteLine($"\t- {boxOnPallet}");
             }
         }
 
         //---------------------LINQ-----------------------
-        Console.WriteLine("\nГруппировка паллет по сроку годности, сортировка по сроку годности и весу:");
-        var palletByExpiration = pallets.GroupBy(p => p.ExpirationDate)
-        .OrderBy(g => g.Key)
-        .Select(g => new
+        Console.WriteLine("\nГруппировка паллет по сроку годности, сортировка по сроку годности и весу: ");
+        var palletByExpiration = pallets.GroupBy(p => p.ExpirationDate) // Группировка по сроку годности
+        .OrderBy(g => g.Key) // Сортировка по сроку годности
+        .Select(g => new // Вложенный запрос для сортировки по весу внутри группы
         {
             ExpirationDate = g.Key,
-            Pallets = g.OrderBy(p => p.weight).ToList()
+            Pallets = g.OrderBy(p => p.Weight).ToList() // Сортировка по весу
         }
         );
 
+        // Цикл для вывода результатов группировки и сортировки
         foreach (var palGroup in palletByExpiration)
         {
             Console.WriteLine($"\tСрок годности: {palGroup.ExpirationDate}");
@@ -191,28 +191,28 @@ public class Program
             }
         }
 
-        Console.WriteLine("\nТри паллеты, которые содержат коробки с наибольшим сроком годности, отсортированные по возрастанию объема:");
-        var palletWithBoxes = pallets.Where(p => p.boxes.Any()).ToList();
-
+        Console.WriteLine("\nТри паллеты, которые содержат коробки с наибольшим сроком годности, отсортированные по возрастанию объема: ");
+        var palletWithBoxes = pallets.Where(p => p.Boxes.Any()).ToList(); // Получаем паллеты с коробками и записываем их в переменную palletWithBoxes
         if (palletWithBoxes.Any())
         {
             var palTopBoxExp = palletWithBoxes
                 .Select(p => new
                 {
                     Pallet = p,
-                    TopBoxExp = p.boxes.Max(t => t.expirationDate)
+                    TopBoxExp = p.Boxes.Max(t => t.ExpirationDate) // Выбираем коробку с наибольшим сроков годности
                 })
-                .OrderByDescending(palInfo => palInfo.TopBoxExp)
-                .Take(3)
-                .OrderBy(palInfo => palInfo.Pallet.CalculateVolume())
+                .OrderByDescending(palInfo => palInfo.TopBoxExp) // Сортируем в порядке убывания 
+                .Take(3) // Берем первые три записи
+                .OrderBy(palInfo => palInfo.Pallet.CalculateVolume()) // Сортируем по возрастанию объема
                 .Select(palInfo => palInfo.Pallet)
                 .ToList();
 
+            // Вывод результата запроса
             if (palletWithBoxes.Any())
             {
                 foreach (var pallet in palTopBoxExp)
                 {
-                    DateOnly latestBoxExp = pallet.boxes.Any() ? pallet.boxes.Max(b => b.expirationDate) : DateOnly.MinValue;
+                    DateOnly latestBoxExp = pallet.Boxes.Any() ? pallet.Boxes.Max(b => b.ExpirationDate) : DateOnly.MinValue;
                     Console.WriteLine($"\t-{pallet} (Наибольший срок годности коробки: {latestBoxExp})");
                 }
             }
