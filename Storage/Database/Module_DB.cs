@@ -1,6 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
 using System.Data;
-using System.Globalization;
 
 namespace Storage.Database
 {
@@ -11,6 +10,8 @@ namespace Storage.Database
 
         // Объявляем строку для подключение к БД
         private static string connectionString = $"Data Source={dbFileName};";
+
+        private const int daysExp = 100;
 
         // Функция основного взаимодействия с БД
         public static void OpeningDataBase()
@@ -56,15 +57,15 @@ namespace Storage.Database
                             }
 
                             DateOnly parseExpDate = DateOnly.MinValue;
-                            if (reader["ExpirationDate"] != DBNull.Value)
+                            if (!string.IsNullOrEmpty(reader["ExpirationDate"].ToString()))
                             {
                                 string expDateStr = reader["ExpirationDate"].ToString();
                                 if (DateTime.TryParse(expDateStr, out var expData))
                                 {
                                     parseExpDate = DateOnly.FromDateTime(expData);
                                 }
-                                else if (!string.IsNullOrEmpty(expDateStr)) Console.WriteLine("Ошибочка!");
                             }
+                            else parseExpDate = parseProductionDate.Value.AddDays(daysExp);
 
                             // Создаем объект класса Box и присваиваем ему данные из БД
                             Box box = new Box(
