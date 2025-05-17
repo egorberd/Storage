@@ -1,39 +1,18 @@
 ﻿using Microsoft.Data.Sqlite;
-using System.Data;
+using Storage.Core.Interfaces;
 
-namespace Storage.Database
+
+namespace Storage.Database.Repositories
 {
-    public class Module_DB
+    public class SqliteRepository : IStorageRepository
     {
-        // Инициализируем переменную которая будет хранить имя файла БД
-        private static string dbFileName = "storageDB.db";
-
-        // Объявляем строку для подключение к БД
-        private static string connectionString = $"Data Source={dbFileName};";
-
-        private const int daysExp = 100;
-
-        // Функция основного взаимодействия с БД
-        public static void OpeningDataBase()
-        {
-            // Настройка привязки библиотеки для последующего подключения к БД
-            SQLitePCL.Batteries.Init();
-
-            // Проверка на наличие файла базы данных в директории запуска
-            if (!File.Exists(dbFileName))
-            {
-                Console.WriteLine($"Файл базы данных '{dbFileName}' не найден.");
-            }
-
-        }
-
         // Функция для загрузки данных о коробоках из БД
-        public static List<Box> LoadBoxesFromDatabase()
+        public List<Box> LoadBoxesFromDatabase()
         {
             List<Box> boxes = new List<Box>();
 
             // Устанавливаем соединение с БД SqLite
-            using SqliteConnection connection = new SqliteConnection(connectionString);
+            using SqliteConnection connection = new SqliteConnection(DatabaseInitializer.ConnectionString);
             {
                 connection.Open();
 
@@ -46,28 +25,28 @@ namespace Storage.Database
                         while (reader.Read())
                         {
                             //Т.к. SqLite хранит дату в текстовом формате мы парсим её чтоб преобразовать в DateOnly
-                            DateOnly? parseProductionDate = null;
-                            if (reader["ProductionDate"] != DBNull.Value)
+                            DateOnly? parsedProductionDate = null;
+                            var prodDate = reader["ProductionDate"];
+                            if (prodDate != DBNull.Value)
                             {
-                                var prodDateStr = reader["ProductionDate"].ToString();
-                                if (DateTime.TryParse(prodDateStr, out var prodData))
+                                if (DateTime.TryParse(prodDate.ToString(), out var prodData))
                                 {
-                                    parseProductionDate = DateOnly.FromDateTime(prodData);
+                                    parsedProductionDate = DateOnly.FromDateTime(prodData);
                                 }
-                                else if (!string.IsNullOrEmpty(prodDateStr)) // Если строка не пустая, но не распарсилась
+                                else if (!string.IsNullOrEmpty(prodDate.ToString())) // Если строка не пустая, но не распарсилась
                                     Console.WriteLine("Ошибка: Не удалось преобразовать в нужный формат!");
                             }
 
-                            var parseExpDate = DateOnly.MinValue;
-                            if (!string.IsNullOrEmpty(reader["ExpirationDate"].ToString()))
+                            var parsedExpDate = DateOnly.MinValue;
+                            var expDateStr = reader["ExpirationDate"].ToString();
+                            if (!string.IsNullOrEmpty(expDateStr))
                             {
-                                var expDateStr = reader["ExpirationDate"].ToString();
                                 if (DateTime.TryParse(expDateStr, out var expData))
                                 {
-                                    parseExpDate = DateOnly.FromDateTime(expData);
+                                    parsedExpDate = DateOnly.FromDateTime(expData);
                                 }
                             }
-                            else parseExpDate = parseProductionDate.Value.AddDays(daysExp);
+
 
                             // Создаем объект класса Box и присваиваем ему данные из БД
                             Box box = new Box(
@@ -75,8 +54,8 @@ namespace Storage.Database
                                 height: Convert.ToDouble(reader["Height"]),
                                 depth: Convert.ToDouble(reader["Depth"]),
                                 weight: Convert.ToDouble(reader["Weight"]),
-                                productionDate: parseProductionDate,
-                                expirationDate: parseExpDate
+                                productionDate: parsedProductionDate,
+                                expirationDate: parsedExpDate
 
                              );
 
@@ -90,12 +69,12 @@ namespace Storage.Database
         }
 
         // Функция для загрузки данных о паллетах из БД SqLite
-        public static List<Pallet> LoadPalletsFromDatabase()
+        public List<Pallet> LoadPalletsFromDatabase()
         {
             List<Pallet> pallets = new List<Pallet>();
 
             // Устанавливаем соединение с БД SqLite
-            using (SqliteConnection connection = new SqliteConnection(connectionString))
+            using (SqliteConnection connection = new SqliteConnection(DatabaseInitializer.ConnectionString))
             {
                 connection.Open();
 

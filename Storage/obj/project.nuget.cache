@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Oqvt3PwgVDE=",
+  "dgSpecHash": "bufvYwWgEBM=",
   "success": true,
-  "projectFilePath": "C:\\Users\\egorb\\source\\repos\\Storage\\Storage\\Storage.csproj",
+  "projectFilePath": "C:\\Users\\egorb\\Storage\\Storage\\Storage.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\egorb\\.nuget\\packages\\microsoft.data.sqlite.core\\9.0.5\\microsoft.data.sqlite.core.9.0.5.nupkg.sha512",
     "C:\\Users\\egorb\\.nuget\\packages\\runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",

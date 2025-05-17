@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\egorb\\source\\repos\\Storage\\Storage\\Storage.csproj": {}
+    "C:\\Users\\egorb\\Storage\\Storage\\Storage.csproj": {}
   },
   "projects": {
-    "C:\\Users\\egorb\\source\\repos\\Storage\\Storage\\Storage.csproj": {
+    "C:\\Users\\egorb\\Storage\\Storage\\Storage.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\egorb\\source\\repos\\Storage\\Storage\\Storage.csproj",
+        "projectUniqueName": "C:\\Users\\egorb\\Storage\\Storage\\Storage.csproj",
         "projectName": "Storage",
-        "projectPath": "C:\\Users\\egorb\\source\\repos\\Storage\\Storage\\Storage.csproj",
+        "projectPath": "C:\\Users\\egorb\\Storage\\Storage\\Storage.csproj",
         "packagesPath": "C:\\Users\\egorb\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\egorb\\source\\repos\\Storage\\Storage\\obj\\",
+        "outputPath": "C:\\Users\\egorb\\Storage\\Storage\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\egorb\\AppData\\Roaming\\NuGet\\NuGet.Config",
