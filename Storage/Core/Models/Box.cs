@@ -1,46 +1,36 @@
-﻿// Создаем наследуемый класс "Коробка"
-public class Box : StorageItem
+﻿namespace Storage.Core.Models
 {
-    // Инициализируем переменные срока годности и даты производства
-
-    public DateOnly? ProductionDate { get; private set; }
-
-    private DateOnly _expirationDate;
-
-    public DateOnly ExpirationDate
+    // Создаем наследуемый класс "Коробка"
+    public class Box(double width, double height, double depth, double weight, DateOnly? productionDate, DateOnly expirationDate)
+        : StorageItem(width, height, depth, weight)
     {
-        get
+        // Инициализируем переменные срока годности и даты производства
+        private DateOnly _expirationDate = expirationDate; // Поле для зранения срока годности 
+        public DateOnly? ProductionDate { get; set; } = productionDate;
+
+        public DateOnly ExpirationDate
         {
-            if (ProductionDate.HasValue)
+            get => ProductionDate?.AddDays(100) ?? _expirationDate;
+            set => _expirationDate = value;
+        }
+
+        // Переопределяем значение объема для класса Box
+        public override double Volume
+        {
+            get
             {
-                return ProductionDate.Value.AddDays(100);
+                return Width * Height * Depth;
             }
-            return _expirationDate;
         }
-        set
+
+        // Переопределяем метод ToString() для последующего вывода параметров на экран
+        public override string ToString()
         {
-            _expirationDate = value;
+            var dateInfo = ProductionDate.HasValue
+                ? $", Дата производства: {ProductionDate.Value:dd.MM.yyyy}, Срок годности: {ExpirationDate:dd.MM.yyyy}"
+                : $", Срок годности: {ExpirationDate:dd.MM.yyyy}";
+
+            return $"{base.ToString()}, Объем коробки: {Volume}{dateInfo}";
         }
-    }
-
-    // Инициализируем конструктор наследуемого класса 
-    public Box(double width, double height, double depth, double weight,
-        DateOnly expirationDate, DateOnly? productionDate = null) : base(width, height, depth, weight)
-    {
-        ProductionDate = productionDate;
-        ExpirationDate = expirationDate;
-    }
-
-    // Переопределяем значение объема для класса Box
-    public override double Volume
-         => Width * Height * Depth;
-
-
-    // Переопределяем метод ToString() для последующего вывода параметров на экран
-    public override string ToString()
-    {
-        var dateInfo = ProductionDate.HasValue ? $", Дата производства: {ProductionDate.Value:dd.MM.yyyy}, Срок годности: {ExpirationDate:dd.MM.yyyy}" : $", Срок годности: {ExpirationDate:dd.MM.yyyy}";
-
-        return $"{base.ToString()}, Объем коробки: {Volume}{dateInfo}";
     }
 }

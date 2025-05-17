@@ -1,13 +1,9 @@
-﻿using Microsoft.Data.Sqlite;
-using System.Data;
-
-namespace Storage.Database
+﻿namespace Storage.Database
 {
     public static class DatabaseInitializer
     {
         // Инициализируем переменную которая будет хранить имя файла БД
         private static string dbFileName = "storageDB.db";
-        //private const int daysExp = 100;
 
         // Объявляем строку для подключение к БД
         public static string ConnectionString = $"Data Source={dbFileName};";

@@ -1,4 +1,6 @@
-﻿namespace Storage.Core.Interfaces
+﻿using Storage.Core.Models;
+
+namespace Storage.Core.Interfaces
 {
     public interface IStorageRepository
     {
